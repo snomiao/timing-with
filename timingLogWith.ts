@@ -1,5 +1,4 @@
 // util util util util util util util util util util util util util util util
-type Awaitable<R> = Promise<R> | R;
 type Repromise<T> = Promise<Awaited<T>>;
 // type type type type type type type type type type type type type type type
 // prettier-ignore
