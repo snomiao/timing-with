@@ -1,4 +1,4 @@
-import { timingWith as t } from "./index";
+import { timingLogWith as t } from "./timingLogWith";
 import { expectTypeOf } from "expect-type";
 it("works in slot3", async () => {
   const r1 = await t("hello", async (a: string) => 123, "asdf");
