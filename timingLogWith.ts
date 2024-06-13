@@ -1,3 +1,4 @@
+import prettyMs from "pretty-ms";
 // util util util util util util util util util util util util util util util
 type Repromise<T> = Promise<Awaited<T>>;
 // type type type type type type type type type type type type type type type
@@ -27,12 +28,14 @@ function _timingLogWith<
     // @ts-expect-error curried
     return r;
   }
-  return (async function () {
-    console.time(msg);
+  const promise = (async function () {
+    const s = +new Date();
     const result = await fn(...args);
-    console.timeEnd(msg);
+    const e = +new Date();
+    console.log(`[${prettyMs(e - s)}] ${msg}`);
     return result as Z;
   })();
+  return promise;
 }
 // export export export export export export export export export export expo
 export const timingLogWith = _timingLogWith as CURRIED;
