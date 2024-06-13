@@ -1,11 +1,17 @@
-import prettyMs from "pretty-ms";
+import prettyMs, { Options } from "pretty-ms";
 // util util util util util util util util util util util util util util util
 type Repromise<T> = Promise<Awaited<T>>;
+type TimingLogOptions = Options & {
+  msg: string;
+  onStart?: (ms: number) => void;
+  onEnd?: (ms: number) => void;
+  log?: typeof console.log | null;
+};
 // type type type type type type type type type type type type type type type
 // prettier-ignore
 type $<
-  MSG extends string
-            = string,
+  MSG extends string|TimingLogOptions
+            = string|TimingLogOptions,
   FUN extends (...args: any[]) => unknown
             = (...args: any[]) => unknown,
   ARG extends Parameters<FUN>
@@ -19,20 +25,25 @@ function _timingLogWith<
   B extends $<A>[2],
   C extends $<A, B>[3],
   Z extends $<A, B, C>[0]
->(msg: A, fn: B, ...args: C): Promise<Z> {
+>(opt: A, fn: B, ...args: C): Promise<Z> {
   if (!fn)
     // @ts-expect-error curried
-    return (fn: B, ...args: C) => _timingLogWith(msg, fn, ...args) as any;
+    return (fn: B, ...args: C) => _timingLogWith(opt, fn, ...args) as any;
   if (fn && args.length < fn.length) {
-    const r = (...args: C) => _timingLogWith(msg, fn, ...args) as any;
+    const r = (...args: C) => _timingLogWith(opt, fn, ...args) as any;
     // @ts-expect-error curried
     return r;
   }
+  const options: TimingLogOptions =
+    typeof opt === "object" ? opt : { msg: opt };
+  const log = options.log || console.log;
   const promise = (async function () {
     const s = +new Date();
+    options.onStart?.(s);
     const result = await fn(...args);
     const e = +new Date();
-    console.log(`[${prettyMs(e - s)}] ${msg}`);
+    options.onEnd?.(e);
+    log?.(`[${prettyMs(e - s, options)}] ${options.msg}`);
     return result as Z;
   })();
   return promise;
